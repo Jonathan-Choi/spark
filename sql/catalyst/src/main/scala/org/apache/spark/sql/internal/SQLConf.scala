@@ -5032,6 +5032,13 @@ object SQLConf {
     .booleanConf
     .createWithDefault(false)
 
+  val SKIP_DUPLICATE_COLUMN_CHECK = buildConf("spark.sql.skipDuplicateColumnCheck")
+    .internal()
+    .doc("when set to true, column name duplication check will be skipped ")
+    .version("4.0.0")
+    .booleanConf
+    .createWithDefault(false)
+
   /**
    * Holds information about keys that have been deprecated.
    *
@@ -5438,6 +5445,8 @@ class SQLConf extends Serializable with Logging with SqlApiConf {
   def subqueryReuseEnabled: Boolean = getConf(SUBQUERY_REUSE_ENABLED)
 
   override def caseSensitiveAnalysis: Boolean = getConf(SQLConf.CASE_SENSITIVE)
+
+  def skipDuplicationColumnCheck: Boolean = getConf(SQLConf.SKIP_DUPLICATE_COLUMN_CHECK)
 
   def constraintPropagationEnabled: Boolean = getConf(CONSTRAINT_PROPAGATION_ENABLED)
 

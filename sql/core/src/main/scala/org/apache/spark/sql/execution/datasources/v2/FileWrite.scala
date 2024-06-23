@@ -92,8 +92,11 @@ trait FileWrite extends Write {
         s"got: ${paths.mkString(", ")}")
     }
     val pathName = paths.head
-    SchemaUtils.checkColumnNameDuplication(
-      schema.fields.map(_.name).toImmutableArraySeq, caseSensitiveAnalysis)
+    val skipDuplicationColumnCheck = sqlConf.skipDuplicationColumnCheck
+    if (!skipDuplicationColumnCheck) {
+      SchemaUtils.checkColumnNameDuplication(
+        schema.fields.map(_.name).toImmutableArraySeq, caseSensitiveAnalysis)
+    }
     DataSource.validateSchema(schema, sqlConf)
 
     // TODO: [SPARK-36340] Unify check schema filed of DataSource V2 Insert.

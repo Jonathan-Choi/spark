@@ -2056,6 +2056,24 @@ abstract class CSVSuite
     }
   }
 
+  test("Ignore duplicate column name if spark.sql.skipDuplicateColumnCheck is true") {
+    withSQLConf(SQLConf.SKIP_DUPLICATE_COLUMN_CHECK.key -> "true") {
+      withTempPath { path =>
+        val data = Seq(("a", "b"))
+        val odf = spark.createDataFrame(data)
+        odf.createOrReplaceTempView("temp_view")
+        sql("select _1 as col, _2 as col from temp_view")
+          .write.option("header", value = true).csv(path.getCanonicalPath)
+        val ischema = new StructType().add("_c0", StringType).add("_c1", StringType)
+        val idf = spark.read.schema(ischema)
+          .option("header", value = false)
+          .csv(path.getCanonicalPath)
+
+        checkAnswer(idf, List(Row("col", "col"), Row("a", "b")))
+      }
+    }
+  }
+
   test("SPARK-23786: check header on parsing of dataset of strings") {
     val ds = Seq("columnA,columnB", "1.0,1000.0").toDS()
     val ischema = new StructType().add("columnB", DoubleType).add("columnA", DoubleType)
